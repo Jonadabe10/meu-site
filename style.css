@@ -1,0 +1,89 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #e2e8f0;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.box {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 15px auto;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+input, button, select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 10px;
+    border: none;
+}
+
+input, select {
+    background: #334155;
+    color: white;
+}
+
+button {
+    background: #22c55e;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #16a34a;
+}
+
+ul {
+    list-style: none;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #334155;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+.item button {
+    background: #ef4444;
+    padding: 5px 10px;
+    border-radius: 6px;
+    width: auto;
+}
+
+.positivo {
+    color: #22c55e;
+}
+
+.negativo {
+    color: #ef4444;
+}
+
+#resultado, #analise {
+    margin-top: 10px;
+    white-space: pre-line;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+}
