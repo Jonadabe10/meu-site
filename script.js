@@ -12,13 +12,14 @@ function salvarSalario() {
 function adicionarGasto() {
     let desc = document.getElementById("descricao").value;
     let valor = document.getElementById("valor").value;
+    let categoria = document.getElementById("categoria").value;
 
     if (!desc || !valor) {
         alert("Preencha tudo!");
         return;
     }
 
-    gastos.push({ desc, valor: Number(valor) });
+    gastos.push({ desc, valor: Number(valor), categoria });
     localStorage.setItem("gastos", JSON.stringify(gastos));
 
     document.getElementById("descricao").value = "";
@@ -37,7 +38,10 @@ function atualizarLista() {
 
         item.innerHTML = `
             <div class="item">
-                <span>${g.desc}</span>
+                <div>
+                    <span>${g.desc}</span><br>
+                    <small>${g.categoria}</small>
+                </div>
                 <strong>R$ ${g.valor}</strong>
                 <button onclick="removerGasto(${index})">❌</button>
             </div>
@@ -50,7 +54,6 @@ function atualizarLista() {
 function removerGasto(index) {
     gastos.splice(index, 1);
     localStorage.setItem("gastos", JSON.stringify(gastos));
-
     atualizarLista();
     atualizarResumo();
 }
@@ -60,15 +63,50 @@ function atualizarResumo() {
     let total = gastos.reduce((soma, g) => soma + g.valor, 0);
     let saldo = salario - total;
 
-    document.getElementById("totalGastos").innerText =
-        "Total gasto: R$ " + total;
+    document.getElementById("totalGastos").innerText = "Total gasto: R$ " + total;
 
-    document.getElementById("saldo").innerText =
-        "Saldo: R$ " + saldo;
+    let saldoEl = document.getElementById("saldo");
+    saldoEl.innerText = "Saldo: R$ " + saldo;
+
+    saldoEl.classList.remove("positivo", "negativo");
+    saldoEl.classList.add(saldo >= 0 ? "positivo" : "negativo");
 }
 
 function mostrarResumo() {
     atualizarResumo();
+}
+
+// ANÁLISE INTELIGENTE
+function analisarGastos() {
+    let total = gastos.reduce((soma, g) => soma + g.valor, 0);
+    let categorias = {};
+    let alerta = "";
+
+    gastos.forEach(g => {
+        categorias[g.categoria] = (categorias[g.categoria] || 0) + g.valor;
+    });
+
+    for (let cat in categorias) {
+        let porcentagem = (categorias[cat] / total) * 100;
+
+        if (porcentagem > 40) {
+            alerta += `⚠️ Muito gasto com ${cat} (${porcentagem.toFixed(1)}%)\n`;
+        }
+
+        if (cat === "Outros" && porcentagem > 20) {
+            alerta += `💡 Muitos gastos em "Outros". Organize melhor.\n`;
+        }
+
+        if (cat === "Carro" && porcentagem > 30) {
+            alerta += `🚗 Carro está alto. Considere reduzir custos.\n`;
+        }
+    }
+
+    if (alerta === "") {
+        alerta = "✅ Seus gastos estão equilibrados!";
+    }
+
+    document.getElementById("analise").innerText = alerta;
 }
 
 // VIAGEM
@@ -91,45 +129,31 @@ function calcularViagem() {
     let hospedagem = Number(document.getElementById("hospedagem").value);
     let mesesPlano = Number(document.getElementById("mesesPlano").value);
 
-    let custoHospedagem = dias * hospedagem;
-    let totalViagem = transporte + custoHospedagem;
+    let custo = transporte + (dias * hospedagem);
+    let totalGastos = gastos.reduce((s, g) => s + g.valor, 0);
+    let sobra = salario - totalGastos;
 
-    let totalGastos = gastos.reduce((soma, g) => soma + g.valor, 0);
-    let sobraMensal = salario - totalGastos;
-
-    let resultado = document.getElementById("resultado");
-
-    if (sobraMensal <= 0) {
-        resultado.innerText = "Você não está conseguindo economizar 😬";
+    if (sobra <= 0) {
+        document.getElementById("resultado").innerText =
+            "Você não consegue economizar atualmente 😬";
         return;
     }
 
-    let mesesNecessarios = totalViagem / sobraMensal;
+    let meses = custo / sobra;
+    let meta = mesesPlano > 0 ? custo / mesesPlano : 0;
 
-    let economiaNecessaria = mesesPlano > 0
-        ? totalViagem / mesesPlano
-        : 0;
-
-    resultado.innerText =
-        `Viagem para ${destino} (${dias} dias)\n` +
-        `Custo total: R$ ${totalViagem}\n\n` +
-        `💰 Sobra por mês: R$ ${sobraMensal}\n` +
-        `📅 Tempo necessário: ${mesesNecessarios.toFixed(1)} meses\n\n` +
+    document.getElementById("resultado").innerText =
+        `Viagem para ${destino}\nCusto: R$ ${custo}\n\n` +
+        `Sobra mensal: R$ ${sobra}\n` +
+        `Tempo necessário: ${meses.toFixed(1)} meses\n\n` +
         (mesesPlano > 0
-            ? `🎯 Para viajar em ${mesesPlano} meses, você precisa guardar: R$ ${economiaNecessaria.toFixed(2)}/mês`
+            ? `Para viajar em ${mesesPlano} meses: R$ ${meta.toFixed(2)}/mês`
             : "");
 }
 
-// REDIRECIONAMENTO
-
+// LINKS
 function buscarVoos() {
     let destino = encodeURIComponent(document.getElementById("destino").value);
-
-    if (!destino) {
-        alert("Digite um destino!");
-        return;
-    }
-
     window.open(`https://www.skyscanner.com.br/transport/flights-to/${destino}`, "_blank");
 }
 
