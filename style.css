@@ -72,4 +72,3 @@ ul {
     justify-content: center;
     cursor: pointer;
 }
-.box { width: 90%; max-width: 400px; } input, button, select { width: 100%; margin: 5px 0; } h1 { font-size: 24px; } @media (max-width: 480px) { body { padding: 10px; } .box { padding: 15px; } }
