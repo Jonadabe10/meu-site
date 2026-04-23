@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Finanças</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <body>
 
@@ -23,8 +21,19 @@
     <!-- GASTOS -->
     <div class="box">
         <h2>Adicionar Gasto</h2>
+
         <input type="text" id="descricao" placeholder="Ex: Mercado">
         <input type="number" id="valor" placeholder="Valor">
+
+        <select id="categoria">
+            <option value="Casa">🏠 Despesas de casa</option>
+            <option value="Aluguel">🏢 Aluguel</option>
+            <option value="Viagem">✈️ Viagem</option>
+            <option value="Consórcio">📄 Consórcio</option>
+            <option value="Carro">🚗 Carro</option>
+            <option value="Outros">📦 Outros</option>
+        </select>
+
         <button onclick="adicionarGasto()">Adicionar</button>
 
         <ul id="lista"></ul>
@@ -33,9 +42,16 @@
     <!-- RESUMO -->
     <div class="box">
         <h2>Resumo</h2>
-        <button onclick="mostrarResumo()">Mostrar Resumo</button>
+        <button onclick="mostrarResumo()">Atualizar</button>
         <p id="totalGastos"></p>
         <p id="saldo"></p>
+    </div>
+
+    <!-- ANÁLISE -->
+    <div class="box">
+        <h2>Análise dos seus gastos</h2>
+        <button onclick="analisarGastos()">Analisar</button>
+        <p id="analise"></p>
     </div>
 
     <!-- VIAGEM -->
@@ -47,18 +63,10 @@
 
         <button onclick="mostrarOpcoes()">Calcular</button>
 
-        <div id="opcoes" style="display: none; margin-top: 15px;">
-
-            <select id="transporte">
-                <option value="300">Ônibus (R$ 300)</option>
-                <option value="800">Avião (R$ 800)</option>
+        <div id="opcoes" style="display:none;">
+    
             </select>
 
-            <select id="hospedagem">
-                <option value="100">Econômico (R$ 100/noite)</option>
-                <option value="250">Hotel (R$ 250/noite)</option>
-                <option value="500">Luxo (R$ 500/noite)</option>
-            </select>
 
             <input type="number" id="mesesPlano" placeholder="Em quantos meses quer viajar?">
 
@@ -76,29 +84,6 @@
     </div>
 
     <script src="script.js"></script>
+
 </body>
-.box {
-width: 90%;
-max-width: 400px;
-}
-
-input, button, select {
-width: 100%;
-margin: 5px 0;
-}
-
-h1 {
-font-size: 24px;
-}
-
-@media (max-width: 480px) {
-body {
-padding: 10px;
-}
-
-.box {
-padding: 15px;
-}
-}
-
 </html>
