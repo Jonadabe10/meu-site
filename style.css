@@ -1,74 +1,43 @@
+/* RESET */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* BODY */
 body {
-    font-family: Arial;
-    background: #0f172a;
-    color: white;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: #e2e8f0;
+    padding: 20px;
     text-align: center;
 }
 
+/* TÍTULO */
+h1 {
+    margin-bottom: 20px;
+    font-size: 28px;
+}
+
+/* BOXES */
 .box {
     background: #1e293b;
     padding: 20px;
-    margin: 20px auto;
-    width: 300px;
-    border-radius: 10px;
+    border-radius: 15px;
+    margin: 15px auto;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease;
 }
 
-input {
-    width: 90%;
-    padding: 8px;
-    margin: 5px;
-    border-radius: 5px;
-    border: none;
+.box:hover {
+    transform: scale(1.02);
 }
 
-button {
-    padding: 10px;
-    margin-top: 10px;
-    background: #22c55e;
-    border: none;
-    color: white;
-    cursor: pointer;
-    width: 95%;
-}
-
-button:hover {
-    background: #16a34a;
-}
-ul {
-    list-style: none;
-    padding: 0;
-}
-
-.item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #334155;
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 8px;
-}
-
-.item span {
-    flex: 1;
-    text-align: left;
-}
-
-.item strong {
-    margin-right: 10px;
-}
-
-.item button {
-    width: 28px;
-    height: 28px;
-    background: #ef4444;
-    border: none;
-    border-radius: 6px;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-}
+/* INPUTS E BOTÕES */
+input, button, select {
+    width: 100%;
+    padding: 12px;
+    margin: 6px 0;
+    border
