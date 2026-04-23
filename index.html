@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Minhas Finanças</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<body>
+
+    <h1>💰 Minhas Finanças</h1>
+
+    <!-- SALÁRIO -->
+    <div class="box">
+        <h2>Salário</h2>
+        <input type="number" id="salario" placeholder="R$">
+        <button onclick="salvarSalario()">Salvar</button>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="box">
+        <h2>Adicionar Gasto</h2>
+        <input type="text" id="descricao" placeholder="Ex: Mercado">
+        <input type="number" id="valor" placeholder="Valor">
+        <button onclick="adicionarGasto()">Adicionar</button>
+
+        <ul id="lista"></ul>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="box">
+        <h2>Resumo</h2>
+        <button onclick="mostrarResumo()">Mostrar Resumo</button>
+        <p id="totalGastos"></p>
+        <p id="saldo"></p>
+    </div>
+
+    <!-- VIAGEM -->
+    <div class="box">
+        <h2>Planejar Viagem ✈️</h2>
+
+        <input type="text" id="destino" placeholder="Destino">
+        <input type="number" id="dias" placeholder="Quantos dias?">
+
+        <button onclick="mostrarOpcoes()">Calcular</button>
+
+        <div id="opcoes" style="display: none; margin-top: 15px;">
+
+            <select id="transporte">
+                <option value="300">Ônibus (R$ 300)</option>
+                <option value="800">Avião (R$ 800)</option>
+            </select>
+
+            <select id="hospedagem">
+                <option value="100">Econômico (R$ 100/noite)</option>
+                <option value="250">Hotel (R$ 250/noite)</option>
+                <option value="500">Luxo (R$ 500/noite)</option>
+            </select>
+
+            <input type="number" id="mesesPlano" placeholder="Em quantos meses quer viajar?">
+
+            <button onclick="calcularViagem()">Ver custo</button>
+
+            <hr>
+
+            <button onclick="buscarVoos()">✈️ Ver Passagens</button>
+            <button onclick="buscarOnibus()">🚌 Ver Ônibus</button>
+            <button onclick="buscarHotel()">🏨 Ver Hospedagem</button>
+
+        </div>
+
+        <p id="resultado"></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+.box {
+width: 90%;
+max-width: 400px;
+}
+
+input, button, select {
+width: 100%;
+margin: 5px 0;
+}
+
+h1 {
+font-size: 24px;
+}
+
+@media (max-width: 480px) {
+body {
+padding: 10px;
+}
+
+.box {
+padding: 15px;
+}
+}
+
+</html>
