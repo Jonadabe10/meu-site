@@ -1,0 +1,301 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+
+.box {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 15px auto;
+    max-width: 400px;
+}
+
+input, button, select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 10px;
+    border: none;
+}
+
+button {
+    background: #22c55e;
+    color: white;
+}
+
+.categorias {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.card-cat {
+    background: #334155;
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.card-cat.ativo {
+    border: 2px solid #8b5cf6;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    background: #334155;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 10px;
+}
+
+.item button {
+    background: red;
+    width: auto;
+}
+
+.positivo { color: #22c55e; }
+.negativo { color: red; }
+
+/* =============================
+   ANÁLISE DOS GASTOS
+============================= */
+
+#box-analise h2 {
+    margin-bottom: 14px;
+}
+
+/* Cards de resumo */
+.analise-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.analise-card {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.analise-label {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 4px;
+}
+
+.analise-valor {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+}
+
+.analise-valor.verde { color: #22c55e; }
+.analise-valor.vermelho { color: #f87171; }
+
+/* Gráficos */
+.analise-graficos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.grafico-box {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.grafico-titulo {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+    justify-content: center;
+}
+
+.legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: #94a3b8;
+}
+
+.legenda-cor {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* Simulação */
+.simulacao-box {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: left;
+    margin-bottom: 12px;
+}
+
+.sim-titulo {
+    font-size: 13px;
+    font-weight: bold;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.sim-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.sim-field label {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 3px;
+}
+
+.sim-field input {
+    padding: 7px 10px;
+    font-size: 13px;
+    background: #1e293b;
+    color: white;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    margin: 0;
+}
+
+/* Outros gastos */
+.outros-box {
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #334155;
+}
+
+.outros-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.outros-header span {
+    font-size: 12px;
+    font-weight: bold;
+    color: #94a3b8;
+}
+
+.btn-add-outro {
+    background: #334155;
+    color: #60a5fa;
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+}
+
+.outro-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 6px;
+    align-items: flex-end;
+    margin-bottom: 6px;
+}
+
+.outro-row label {
+    display: block;
+    font-size: 10px;
+    color: #94a3b8;
+    margin-bottom: 2px;
+}
+
+.outro-row input {
+    padding: 6px 8px;
+    font-size: 12px;
+    background: #0f172a;
+    color: white;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    margin: 0;
+    width: 100%;
+}
+
+.btn-remover-outro {
+    background: #7f1d1d;
+    color: #fca5a5;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 9px;
+    font-size: 12px;
+    cursor: pointer;
+    width: auto;
+    margin: 0;
+    height: 32px;
+}
+
+/* Salário da simulação */
+.sim-salario-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    border-top: 1px solid #334155;
+    padding-top: 10px;
+}
+
+.sim-salario-row .sim-field {
+    flex: 1;
+}
+
+.btn-atualizar {
+    background: #8b5cf6;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    width: auto;
+    margin: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Alertas */
+#analise-alertas {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.8;
+    text-align: left;
+    white-space: pre-line;
+    color: #e2e8f0;
+}
