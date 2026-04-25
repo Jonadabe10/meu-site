@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minhas Finanças</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+    <div class="header-left">
+        <span class="header-logo">💰</span>
+        <div>
+            <h1 class="header-title">Minhas Finanças</h1>
+            <span class="header-sub" id="header-mes"></span>
+        </div>
+    </div>
+    <div class="header-badge" id="header-saldo">Saldo: R$ 0</div>
+</header>
+
+<main class="main">
+
+    <!-- SALÁRIO -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-green">💵</div>
+            <h2 class="card-title">Salário</h2>
+        </div>
+        <div class="input-row">
+            <input type="number" id="salario" placeholder="Digite seu salário (R$)">
+            <button class="btn btn-primary" onclick="salvarSalario()">Salvar</button>
+        </div>
+        <div id="toast-salario" class="toast" style="display:none;">✓ Salário salvo com sucesso!</div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-blue">➕</div>
+            <h2 class="card-title">Adicionar Gasto</h2>
+        </div>
+
+        <p class="section-label">Categoria</p>
+        <div class="categorias">
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Casa')">
+                <span class="cat-ico">🏠</span>
+                <span class="cat-lbl">Casa</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Aluguel')">
+                <span class="cat-ico">🏢</span>
+                <span class="cat-lbl">Aluguel</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Viagem')">
+                <span class="cat-ico">✈️</span>
+                <span class="cat-lbl">Viagem</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Consórcio')">
+                <span class="cat-ico">📄</span>
+                <span class="cat-lbl">Consórcio</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Carro')">
+                <span class="cat-ico">🚗</span>
+                <span class="cat-lbl">Carro</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Outros')">
+                <span class="cat-ico">📦</span>
+                <span class="cat-lbl">Outros</span>
+            </div>
+        </div>
+
+        <input type="hidden" id="categoriaSelecionada">
+        <p id="erro-categoria" class="erro" style="display:none;">⚠️ Selecione uma categoria</p>
+
+        <div class="input-row mt-8">
+            <input type="text" id="descricao" placeholder="Descrição do gasto">
+            <input type="number" id="valor" placeholder="R$" class="input-small">
+        </div>
+        <p id="erro-campos" class="erro" style="display:none;">⚠️ Preencha a descrição e o valor</p>
+
+        <button class="btn btn-primary btn-full mt-8" onclick="adicionarGasto()">Adicionar gasto</button>
+        <div id="toast-gasto" class="toast" style="display:none;">✓ Gasto adicionado com sucesso!</div>
+
+        <ul id="lista" class="lista"></ul>
+    </div>
+
+    <!-- RESUMO -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-purple">📋</div>
+            <h2 class="card-title">Resumo</h2>
+        </div>
+        <div id="resumo-lista" class="resumo-lista"></div>
+        <div class="saldo-box">
+            <span class="saldo-lbl">Saldo restante</span>
+            <span id="saldo" class="saldo-val positivo">R$ 0</span>
+        </div>
+    </div>
+
+    <!-- ANÁLISE -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-purple">📊</div>
+            <h2 class="card-title">Análise dos gastos</h2>
+            <span class="badge-novo">novo</span>
+        </div>
+
+        <div class="analise-cards">
+            <div class="analise-card">
+                <span class="analise-label">Salário</span>
+                <span class="analise-valor" id="an-salario">R$ 0</span>
+            </div>
+            <div class="analise-card">
+                <span class="analise-label">Total gasto</span>
+                <span class="analise-valor vermelho" id="an-total">R$ 0</span>
+            </div>
+            <div class="analise-card">
+                <span class="analise-label">Sobrou</span>
+                <span class="analise-valor verde" id="an-sobrou">R$ 0</span>
+            </div>
+            <div class="analise-card">
+                <span class="analise-label">Comprometido</span>
+                <span class="analise-valor" id="an-pct">0%</span>
+            </div>
+        </div>
+
+        <div class="analise-graficos">
+            <div class="grafico-box">
+                <p class="grafico-titulo">Distribuição</p>
+                <canvas id="graficoDonut" width="150" height="150"></canvas>
+                <div id="legenda-donut" class="legenda"></div>
+            </div>
+            <div class="grafico-box">
+                <p class="grafico-titulo">Por categoria</p>
+                <canvas id="graficoBarra" width="150" height="180"></canvas>
+            </div>
+        </div>
+
+        <div class="simulacao-box">
+            <p class="sim-titulo">Simule seus valores</p>
+            <div class="sim-grid" id="sim-fixos"></div>
+
+            <div class="outros-box">
+                <div class="outros-header">
+                    <span>Outros gastos</span>
+                    <button class="btn-add-outro" onclick="adicionarOutro()">+ Adicionar categoria</button>
+                </div>
+                <div id="outros-lista"></div>
+            </div>
+
+            <div class="sim-salario-row">
+                <div class="sim-field">
+                    <label>Salário (R$)</label>
+                    <input type="number" id="sim-salario" value="0">
+                </div>
+                <button class="btn btn-roxo" onclick="atualizarAnalise()">Atualizar</button>
+            </div>
+        </div>
+
+        <div id="analise-alertas" class="alertas-box"></div>
+    </div>
+
+    <!-- VIAGEM -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-amber">✈️</div>
+            <h2 class="card-title">Planejar Viagem</h2>
+        </div>
+
+        <div class="input-row">
+            <input type="text" id="destino" placeholder="Destino da viagem">
+            <input type="number" id="dias" placeholder="Dias" class="input-small">
+        </div>
+
+        <button class="btn btn-primary btn-full mt-8" onclick="mostrarOpcoes()">Calcular</button>
+
+        <div id="opcoes" style="display:none;" class="opcoes-viagem">
+            <input type="number" id="mesesPlano" placeholder="Em quantos meses quer viajar?">
+            <button class="btn btn-primary btn-full" onclick="calcularViagem()">Ver resultado</button>
+            <p id="resultado" class="resultado-viagem"></p>
+            <div class="viagem-links">
+                <button class="btn btn-link" onclick="buscarVoos()">✈️ Passagens</button>
+                <button class="btn btn-link" onclick="buscarOnibus()">🚌 Ônibus</button>
+                <button class="btn btn-link" onclick="buscarHotel()">🏨 Hotel</button>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
