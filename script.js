@@ -1,415 +1,644 @@
-let gastos = JSON.parse(localStorage.getItem("gastos")) || [];
-let salario = Number(localStorage.getItem("salario")) || 0;
-
-const CORES = ["#534AB7","#0F6E56","#D85A30","#D4537E","#185FA5","#BA7517","#639922","#993556","#A32D2D","#3C3489"];
-const CATS_SUGERIDAS = ["Alimentação","Saúde","Educação","Lazer","Academia","Streaming","Internet","Luz","Água","Farmácia","Roupas","Pets","Seguros","Outros"];
-const CORES_ITEM = { Casa:"#22c55e", Aluguel:"#60a5fa", Viagem:"#f59e0b", Consórcio:"#c084fc", Carro:"#f87171", Outros:"#94a3b8" };
-
-let donutChart = null;
-let barraChart = null;
-let outroIdCounter = 0;
-
-// ========================
-// UTILS
-// ========================
-function fmt(v) {
-    return "R$ " + Math.round(v).toLocaleString("pt-BR");
+/* ========================
+   TEMAS (CSS Variables)
+======================== */
+:root, [data-theme="dark"] {
+    --bg: #0b1120;
+    --card: #111827;
+    --border: #1a2640;
+    --text: #e2e8f0;
+    --text-muted: #4b6080;
+    --input-bg: #0b1120;
+    --input-border: #1f2d40;
+    --header-bg: #111827;
+    --badge-bg: #0d2137;
+    --badge-color: #60a5fa;
+    --badge-border: #1e3a5f;
+    --item-bg: #0b1120;
+    --sim-bg: #0b1120;
+    --outros-bg: #111827;
+    --saldo-bg: #0b1120;
+    --alerta-bg: #0b1120;
+    --shadow: rgba(0,0,0,0.4);
+    --green: #22c55e;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --amber: #f59e0b;
+    --green-dim: #052e16;
+    --blue-dim: #0c1a2e;
+    --purple-dim: #1a0e2e;
+    --amber-dim: #2d1800;
+    --nav-bg: #0d1627;
 }
 
-function showToast(id) {
-    let el = document.getElementById(id);
-    el.style.display = "flex";
-    setTimeout(() => el.style.display = "none", 2500);
+[data-theme="light"] {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --border: #d1dce8;
+    --text: #1a2740;
+    --text-muted: #6b829a;
+    --input-bg: #f7fafc;
+    --input-border: #c8d6e5;
+    --header-bg: #ffffff;
+    --badge-bg: #e8f0fe;
+    --badge-color: #1a56db;
+    --badge-border: #c3d3f7;
+    --item-bg: #f7fafc;
+    --sim-bg: #f7fafc;
+    --outros-bg: #eef2f7;
+    --saldo-bg: #f0f4f8;
+    --alerta-bg: #f7fafc;
+    --shadow: rgba(0,0,0,0.1);
+    --green: #16a34a;
+    --red: #dc2626;
+    --blue: #1d4ed8;
+    --purple: #7c3aed;
+    --amber: #d97706;
+    --green-dim: #dcfce7;
+    --blue-dim: #dbeafe;
+    --purple-dim: #ede9fe;
+    --amber-dim: #fef3c7;
+    --nav-bg: #e8edf4;
 }
 
-function showErro(id) {
-    let el = document.getElementById(id);
-    el.style.display = "block";
-    setTimeout(() => el.style.display = "none", 3000);
+/* ========================
+   BASE
+======================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 60px;
+    transition: background 0.3s, color 0.3s;
 }
 
-function getMes() {
-    return new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+/* ========================
+   HEADER
+======================== */
+.header {
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 16px var(--shadow);
+    transition: background 0.3s;
 }
 
-// ========================
-// HEADER
-// ========================
-function atualizarHeader() {
-    document.getElementById("header-mes").textContent = getMes().charAt(0).toUpperCase() + getMes().slice(1);
-    let total = gastos.reduce((s, g) => s + g.valor, 0);
-    let saldo = salario - total;
-    let headerBadge = document.getElementById("header-saldo");
-    headerBadge.textContent = "Saldo: " + fmt(saldo);
-    headerBadge.style.color = saldo >= 0 ? "#60a5fa" : "#f87171";
-    headerBadge.style.borderColor = saldo >= 0 ? "#1e3a5f" : "#3f0e0e";
-    headerBadge.style.background = saldo >= 0 ? "#0d2137" : "#1f0606";
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+.header-logo { font-size: 24px; }
+
+.header-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
 }
 
-// ========================
-// SALÁRIO
-// ========================
-function salvarSalario() {
-    let val = Number(document.getElementById("salario").value);
-    if (!val || val <= 0) return;
-    salario = val;
-    localStorage.setItem("salario", salario);
-    document.getElementById("sim-salario").value = salario;
-    showToast("toast-salario");
-    atualizarResumo();
-    atualizarAnalise();
-    atualizarHeader();
+.header-sub { font-size: 11px; color: var(--text-muted); }
+
+.header-badge {
+    background: var(--badge-bg);
+    color: var(--badge-color);
+    border: 1px solid var(--badge-border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 14px;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.3s;
 }
 
-// ========================
-// CATEGORIA
-// ========================
-function selecionarCategoria(e, cat) {
-    document.getElementById("categoriaSelecionada").value = cat;
-    document.querySelectorAll(".card-cat").forEach(c => c.classList.remove("ativo"));
-    e.currentTarget.classList.add("ativo");
-    document.getElementById("erro-categoria").style.display = "none";
+.btn-theme {
+    background: var(--item-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.3s;
+}
+.btn-theme:hover { transform: scale(1.1); }
+
+/* ========================
+   NAV MESES
+======================== */
+.nav-meses-bar {
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 8px 20px;
+    position: sticky;
+    top: 57px;
+    z-index: 99;
+    transition: background 0.3s;
 }
 
-// ========================
-// GASTOS
-// ========================
-function adicionarGasto() {
-    let desc = document.getElementById("descricao").value.trim();
-    let valor = document.getElementById("valor").value;
-    let categoria = document.getElementById("categoriaSelecionada").value;
+.nav-mes-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 18px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.nav-mes-btn:hover { background: var(--border); color: var(--text); }
 
-    let ok = true;
+.nav-mes-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 160px;
+    text-align: center;
+    text-transform: capitalize;
+    letter-spacing: -0.01em;
+}
 
-    if (!categoria) {
-        showErro("erro-categoria");
-        ok = false;
+/* ========================
+   MAIN / LAYOUT
+======================== */
+.main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ========================
+   CARDS
+======================== */
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px;
+    transition: background 0.3s, border-color 0.3s;
+    animation: slideUp 0.3s ease both;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.card-icon {
+    width: 36px; height: 36px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+}
+
+.icon-green  { background: var(--green-dim); }
+.icon-blue   { background: var(--blue-dim); }
+.icon-purple { background: var(--purple-dim); }
+.icon-amber  { background: var(--amber-dim); }
+
+.card-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.01em; }
+
+.badge-novo {
+    margin-left: auto;
+    background: var(--purple-dim);
+    color: var(--purple);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.btn-icon {
+    margin-left: auto;
+    background: var(--green-dim);
+    color: var(--green);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 28px; height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+}
+.btn-icon:hover { transform: scale(1.1); }
+
+/* ========================
+   INPUTS & BOTÕES
+======================== */
+input, select {
+    font-family: 'Sora', sans-serif;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 10px 13px;
+    font-size: 14px;
+    width: 100%;
+    transition: border-color 0.2s, background 0.3s;
+    outline: none;
+}
+
+input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+input::placeholder { color: var(--text-muted); }
+input[type="date"] { color: var(--text); }
+
+.input-row { display: flex; gap: 8px; align-items: flex-end; }
+.input-with-label { display: flex; flex-direction: column; gap: 4px; }
+.input-small { width: 90px; flex-shrink: 0; }
+.mini-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.mt-8 { margin-top: 8px; }
+
+.btn {
+    font-family: 'Sora', sans-serif;
+    border: none; border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+.btn:active { transform: scale(0.97); opacity: 0.85; }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(34,197,94,0.3); }
+.btn-roxo { background: #7c3aed; color: #fff; padding: 10px 16px; }
+.btn-roxo:hover { box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
+.btn-danger { background: rgba(220,38,38,0.1); color: var(--red); border: 1px solid rgba(220,38,38,0.2); font-size: 12px; padding: 6px 10px; width: auto; }
+.btn-link { background: var(--blue-dim); color: var(--blue); border: 1px solid var(--border); font-size: 13px; flex: 1; }
+.btn-full { width: 100%; }
+
+.section-label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+.erro { font-size: 12px; color: var(--red); margin-top: 5px; }
+
+/* ========================
+   TOGGLE RECORRENTE
+======================== */
+.recorrente-toggle { margin-left: auto; }
+.toggle-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--text-muted); cursor: pointer;
+    font-weight: 500;
+}
+.toggle-label input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--green);
+    cursor: pointer;
+}
+.recorrente-check { flex-shrink: 0; white-space: nowrap; }
+.alerta-limite-row { display: flex; flex-direction: column; }
+
+/* ========================
+   TOAST
+======================== */
+.toast {
+    background: var(--green-dim);
+    border: 1px solid #14532d;
+    border-radius: 10px;
+    color: #86efac;
+    font-size: 13px; font-weight: 600;
+    padding: 10px 14px; margin-top: 10px;
+    display: flex; align-items: center; gap: 6px;
+    animation: fadeIn 0.2s ease;
+}
+
+.toast-global {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 999; margin: 0; box-shadow: 0 8px 32px var(--shadow);
+    min-width: 220px; justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ========================
+   CATEGORIAS
+======================== */
+.categorias {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.card-cat {
+    background: var(--input-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 13px;
+    padding: 12px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.1s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.card-cat:active { transform: scale(0.95); }
+.card-cat.ativo { border-color: var(--purple); background: var(--purple-dim); }
+
+.cat-ico { font-size: 20px; }
+.cat-lbl { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+.card-cat.ativo .cat-lbl { color: var(--purple); }
+
+/* ========================
+   LISTA DE GASTOS
+======================== */
+.lista { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+
+.item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--item-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 13px; gap: 10px;
+    transition: background 0.2s;
+    animation: slideUp 0.2s ease both;
+}
+
+.item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+
+.item-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.item-nome { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-cat { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.item-recorrente { font-size: 10px; color: var(--amber); }
+.item-valor { font-size: 14px; font-weight: 700; white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
+
+.empty-msg { color: var(--text-muted); font-size: 13px; text-align: center; padding: 14px 0; }
+
+/* ========================
+   METAS
+======================== */
+.metas-lista { display: flex; flex-direction: column; gap: 10px; }
+
+.meta-item {
+    background: var(--item-bg);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 13px 14px;
+    animation: slideUp 0.2s ease both;
+}
+
+.meta-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.meta-icone { font-size: 20px; }
+.meta-nome { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+.meta-btn-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 14px; padding: 2px 6px; }
+.meta-valores { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+.meta-atual { color: var(--green); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.meta-total { font-family: 'JetBrains Mono', monospace; }
+
+.barra-meta-bg { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+.barra-meta-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.5s cubic-bezier(.4,0,.2,1); }
+
+.meta-pct { text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 4px; font-weight: 700; }
+
+/* Editar valor atual da meta */
+.meta-edicao { display: flex; gap: 6px; margin-top: 8px; }
+.meta-edicao input { padding: 6px 10px; font-size: 12px; }
+.meta-edicao button { font-size: 12px; padding: 6px 12px; white-space: nowrap; }
+
+/* ========================
+   RESUMO
+======================== */
+.resumo-lista { display: flex; flex-direction: column; gap: 0; margin-bottom: 12px; }
+
+.resumo-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+.resumo-row:last-child { border-bottom: none; }
+.resumo-lbl { color: var(--text-muted); }
+.resumo-val { color: var(--text); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+.saldo-box {
+    background: var(--saldo-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.3s;
+}
+.saldo-lbl { font-size: 13px; color: var(--text-muted); }
+.saldo-val { font-size: 18px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
+.positivo { color: var(--green); }
+.negativo { color: var(--red); }
+
+/* Barra limite */
+.barra-limite-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+.barra-limite-bg { background: var(--border); border-radius: 99px; height: 8px; overflow: hidden; }
+.barra-limite-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.5s ease, background 0.3s; }
+
+/* Botões exportar */
+.export-btns { margin-left: auto; display: flex; gap: 6px; }
+.btn-export {
+    font-family: 'Sora', sans-serif;
+    background: var(--blue-dim); color: var(--blue);
+    border: 1px solid var(--border);
+    border-radius: 8px; font-size: 11px; font-weight: 700;
+    padding: 5px 10px; cursor: pointer;
+    transition: opacity 0.15s;
+}
+.btn-export:hover { opacity: 0.8; }
+
+/* ========================
+   ANÁLISE
+======================== */
+.analise-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+
+.analise-card {
+    background: var(--saldo-bg);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    transition: background 0.3s;
+}
+
+.analise-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+.analise-valor { font-size: 15px; font-weight: 800; color: var(--text); font-family: 'JetBrains Mono', monospace; }
+.analise-valor.verde   { color: var(--green); }
+.analise-valor.vermelho { color: var(--red); }
+
+.analise-graficos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+.grafico-box {
+    background: var(--saldo-bg);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px;
+    display: flex; flex-direction: column; align-items: center;
+    transition: background 0.3s;
+}
+
+.grafico-historico { grid-column: span 2 !important; width: 100%; margin-bottom: 14px; }
+.grafico-historico canvas { width: 100% !important; }
+
+.grafico-titulo { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; align-self: flex-start; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+
+.legenda { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; justify-content: center; }
+.legenda-item { display: flex; align-items: center; gap: 3px; font-size: 10px; color: var(--text-muted); }
+.legenda-cor { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ========================
+   SIMULAÇÃO
+======================== */
+.simulacao-box {
+    background: var(--sim-bg);
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    padding: 14px; margin-bottom: 12px;
+    transition: background 0.3s;
+}
+
+.sim-titulo { font-size: 13px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.sim-field label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; }
+.sim-field input { padding: 8px 10px; font-size: 13px; }
+
+.outros-box { background: var(--outros-bg); border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+.outros-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.outros-header span { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.btn-add-outro {
+    font-family: 'Sora', sans-serif;
+    background: var(--blue-dim); color: var(--blue);
+    border: 1px solid var(--border);
+    border-radius: 8px; font-size: 11px; font-weight: 700;
+    padding: 5px 10px; cursor: pointer; transition: opacity 0.15s;
+}
+.btn-add-outro:hover { opacity: 0.8; }
+
+.outro-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: flex-end; margin-bottom: 6px; }
+.outro-row label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; font-weight: 600; }
+.outro-row input { padding: 7px 9px; font-size: 12px; }
+
+.btn-remover-outro {
+    font-family: 'Sora', sans-serif;
+    background: rgba(220,38,38,0.1); color: var(--red);
+    border: 1px solid rgba(220,38,38,0.2);
+    border-radius: 8px; padding: 0 10px; font-size: 13px;
+    cursor: pointer; height: 34px; transition: opacity 0.15s;
+}
+
+.sim-salario-row { display: flex; gap: 8px; align-items: flex-end; border-top: 1px solid var(--border); padding-top: 10px; }
+.sim-salario-row .sim-field { flex: 1; }
+
+/* ========================
+   ALERTAS
+======================== */
+.alertas-box {
+    background: var(--alerta-bg);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 11px 14px;
+    font-size: 13px; line-height: 2;
+    white-space: pre-line; color: var(--text-muted);
+    min-height: 40px;
+    transition: background 0.3s;
+}
+
+/* ========================
+   VIAGEM
+======================== */
+.opcoes-viagem { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; animation: fadeIn 0.2s ease; }
+
+.resultado-viagem {
+    background: var(--saldo-bg);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 12px 14px;
+    font-size: 13px; line-height: 1.9; color: var(--text-muted);
+    white-space: pre-line;
+}
+
+.custo-diario-box {
+    background: var(--amber-dim);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    padding: 10px 14px;
+    font-size: 13px; color: var(--amber); font-weight: 600;
+    text-align: center;
+}
+
+.viagem-links { display: flex; gap: 8px; }
+
+/* ========================
+   MODAL
+======================== */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+.modal-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    width: 90%; max-width: 380px;
+    animation: slideUp 0.25s ease both;
+}
+
+.modal-title { font-size: 17px; font-weight: 800; color: var(--text); margin-bottom: 16px; }
+.modal-field { margin-bottom: 12px; }
+.modal-field label { display: block; font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+.modal-actions .btn { flex: 1; }
+
+/* ========================
+   RESPONSIVO DESKTOP
+======================== */
+@media (min-width: 700px) {
+    .main {
+        max-width: 760px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
     }
-
-    if (!desc || !valor || Number(valor) <= 0) {
-        showErro("erro-campos");
-        ok = false;
+    .card:nth-child(4),
+    .card:nth-child(5),
+    .card:nth-child(6) {
+        grid-column: span 2;
     }
-
-    if (!ok) return;
-
-    gastos.push({ desc, valor: Number(valor), categoria });
-    localStorage.setItem("gastos", JSON.stringify(gastos));
-
-    document.getElementById("descricao").value = "";
-    document.getElementById("valor").value = "";
-    document.getElementById("categoriaSelecionada").value = "";
-    document.querySelectorAll(".card-cat").forEach(c => c.classList.remove("ativo"));
-
-    showToast("toast-gasto");
-    atualizarLista();
-    atualizarResumo();
-    atualizarAnalise();
-    atualizarHeader();
+    .header { padding: 16px 32px; }
+    .grafico-historico { margin-bottom: 14px; }
 }
-
-// ========================
-// LISTA
-// ========================
-function atualizarLista() {
-    let lista = document.getElementById("lista");
-    lista.innerHTML = "";
-
-    if (gastos.length === 0) {
-        lista.innerHTML = "<li style='text-align:center;color:#2d3f55;font-size:13px;padding:12px 0;'>Nenhum gasto adicionado</li>";
-        return;
-    }
-
-    gastos.forEach((g, index) => {
-        let cor = CORES_ITEM[g.categoria] || "#94a3b8";
-        let item = document.createElement("li");
-        item.innerHTML = `
-            <div class="item">
-                <div class="item-left">
-                    <div class="item-dot" style="background:${cor};"></div>
-                    <div>
-                        <div class="item-nome">${g.desc}</div>
-                        <div class="item-cat">${g.categoria}</div>
-                    </div>
-                </div>
-                <span class="item-valor" style="color:${cor};">${fmt(g.valor)}</span>
-                <button class="btn btn-danger" onclick="removerGasto(${index})">✕</button>
-            </div>
-        `;
-        lista.appendChild(item);
-    });
-}
-
-function removerGasto(index) {
-    gastos.splice(index, 1);
-    localStorage.setItem("gastos", JSON.stringify(gastos));
-    atualizarLista();
-    atualizarResumo();
-    atualizarAnalise();
-    atualizarHeader();
-}
-
-// ========================
-// RESUMO
-// ========================
-function atualizarResumo() {
-    let total = gastos.reduce((s, g) => s + g.valor, 0);
-    let saldo = salario - total;
-
-    let cats = {};
-    gastos.forEach(g => {
-        cats[g.categoria] = (cats[g.categoria] || 0) + g.valor;
-    });
-
-    let listaEl = document.getElementById("resumo-lista");
-    listaEl.innerHTML = "";
-
-    if (Object.keys(cats).length === 0) {
-        listaEl.innerHTML = "<p style='color:#2d3f55;font-size:13px;padding:8px 0;text-align:center;'>Nenhum gasto registrado</p>";
-    } else {
-        Object.entries(cats).forEach(([cat, val]) => {
-            let row = document.createElement("div");
-            row.className = "resumo-row";
-            row.innerHTML = `<span class="resumo-lbl">${cat}</span><span class="resumo-val">${fmt(val)}</span>`;
-            listaEl.appendChild(row);
-        });
-    }
-
-    let saldoEl = document.getElementById("saldo");
-    saldoEl.textContent = fmt(saldo);
-    saldoEl.className = "saldo-val " + (saldo >= 0 ? "positivo" : "negativo");
-}
-
-// ========================
-// ANÁLISE
-// ========================
-function atualizarAnalise() {
-    try {
-        let cats = {};
-        gastos.forEach(g => {
-            cats[g.categoria] = (cats[g.categoria] || 0) + g.valor;
-        });
-
-        // Valores da simulação sobrescrevem
-        document.querySelectorAll(".sim-fixo-input").forEach(inp => {
-            let cat = inp.dataset.cat;
-            let val = parseFloat(inp.value) || 0;
-            if (val > 0) cats[cat] = val;
-        });
-
-        // Outros personalizados
-        let outrosLista = document.getElementById("outros-lista");
-        if (outrosLista) {
-            outrosLista.querySelectorAll(".outro-row").forEach(row => {
-                let id = row.dataset.id;
-                let nome = (document.getElementById("outro-nome-" + id)?.value || "").trim();
-                let val = parseFloat(document.getElementById("outro-val-" + id)?.value) || 0;
-                if (nome && val > 0) cats[nome] = val;
-            });
-        }
-
-        let labels = Object.keys(cats);
-        let valores = Object.values(cats);
-        let total = valores.reduce((a, b) => a + b, 0);
-        let simSal = parseFloat(document.getElementById("sim-salario")?.value) || salario || 0;
-        let sobrou = simSal - total;
-        let pct = simSal > 0 ? ((total / simSal) * 100).toFixed(1) : 0;
-
-        document.getElementById("an-salario").textContent = fmt(simSal);
-        document.getElementById("an-total").textContent = fmt(total);
-        document.getElementById("an-sobrou").textContent = fmt(sobrou);
-        document.getElementById("an-pct").textContent = pct + "%";
-
-        // Sem dados
-        if (labels.length === 0) {
-            if (donutChart) { donutChart.destroy(); donutChart = null; }
-            if (barraChart) { barraChart.destroy(); barraChart = null; }
-            document.getElementById("legenda-donut").innerHTML =
-                "<span style='color:#2d3f55;font-size:12px;'>Adicione gastos para ver a análise</span>";
-            document.getElementById("analise-alertas").textContent = "";
-            return;
-        }
-
-        let cores = labels.map((_, i) => CORES[i % CORES.length]);
-
-        // Donut
-        let ctxD = document.getElementById("graficoDonut").getContext("2d");
-        if (donutChart) donutChart.destroy();
-        donutChart = new Chart(ctxD, {
-            type: "doughnut",
-            data: {
-                labels,
-                datasets: [{ data: valores, backgroundColor: cores, borderWidth: 2, borderColor: "#111827" }]
-            },
-            options: {
-                responsive: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => " " + fmt(ctx.parsed) } }
-                },
-                cutout: "62%"
-            }
-        });
-
-        // Legenda
-        document.getElementById("legenda-donut").innerHTML = labels.map((l, i) =>
-            `<div class="legenda-item">
-                <div class="legenda-cor" style="background:${cores[i]}"></div>
-                <span>${l}</span>
-            </div>`
-        ).join("");
-
-        // Barra
-        let canvasBarra = document.getElementById("graficoBarra");
-        canvasBarra.height = Math.max(180, labels.length * 42 + 50);
-        let ctxB = canvasBarra.getContext("2d");
-        if (barraChart) barraChart.destroy();
-        barraChart = new Chart(ctxB, {
-            type: "bar",
-            data: {
-                labels,
-                datasets: [{ data: valores, backgroundColor: cores, borderRadius: 4, borderSkipped: false }]
-            },
-            options: {
-                indexAxis: "y",
-                responsive: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => " " + fmt(ctx.parsed.x) } }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: "#4b6080", font: { size: 10 }, callback: v => "R$" + (v >= 1000 ? (v/1000).toFixed(1)+"k" : v) },
-                        grid: { color: "rgba(255,255,255,0.04)" }
-                    },
-                    y: {
-                        ticks: { color: "#4b6080", font: { size: 10 } },
-                        grid: { display: false }
-                    }
-                }
-            }
-        });
-
-        // Alertas
-        let alertas = "";
-        labels.forEach((cat, i) => {
-            let p = total > 0 ? (valores[i] / total) * 100 : 0;
-            if (p > 40) alertas += `⚠️ Muito gasto com ${cat}\n`;
-        });
-        if (sobrou < 0) alertas += `🔴 Gastos ultrapassam o salário!\n`;
-        if (!alertas && total > 0) alertas = "✅ Tudo equilibrado!";
-        document.getElementById("analise-alertas").textContent = alertas;
-
-    } catch(e) {
-        console.error("Erro na análise:", e);
-    }
-}
-
-// ========================
-// SIMULAÇÃO — campos fixos
-// ========================
-function gerarCamposSimulacao() {
-    let fixos = ["Casa","Aluguel","Carro","Consórcio","Viagem"];
-    let grid = document.getElementById("sim-fixos");
-    grid.innerHTML = "";
-
-    fixos.forEach(cat => {
-        let valAtual = gastos.filter(g => g.categoria === cat).reduce((s, g) => s + g.valor, 0);
-        let div = document.createElement("div");
-        div.className = "sim-field";
-        div.innerHTML = `
-            <label>${cat} (R$)</label>
-            <input type="number" class="sim-fixo-input" data-cat="${cat}" value="${valAtual || ""}">
-        `;
-        grid.appendChild(div);
-    });
-
-    document.getElementById("sim-salario").value = salario || "";
-}
-
-// ========================
-// SIMULAÇÃO — outros
-// ========================
-function adicionarOutro(nome = "", valor = "") {
-    let id = outroIdCounter++;
-    let div = document.createElement("div");
-    div.className = "outro-row";
-    div.dataset.id = id;
-
-    let opts = CATS_SUGERIDAS.map(c => `<option value="${c}">`).join("");
-
-    div.innerHTML = `
-        <div>
-            <label>Categoria</label>
-            <input type="text" id="outro-nome-${id}" list="dl-${id}" placeholder="Ex: Alimentação" value="${nome}">
-            <datalist id="dl-${id}">${opts}</datalist>
-        </div>
-        <div>
-            <label>Valor (R$)</label>
-            <input type="number" id="outro-val-${id}" placeholder="0" value="${valor}">
-        </div>
-        <button class="btn-remover-outro" onclick="removerOutro(this)">✕</button>
-    `;
-
-    document.getElementById("outros-lista").appendChild(div);
-}
-
-function removerOutro(btn) {
-    btn.closest(".outro-row").remove();
-    atualizarAnalise();
-}
-
-// ========================
-// VIAGEM
-// ========================
-function mostrarOpcoes() {
-    let destino = document.getElementById("destino").value.trim();
-    let dias = document.getElementById("dias").value;
-    if (!destino || !dias) return alert("Preencha o destino e os dias!");
-    document.getElementById("opcoes").style.display = "flex";
-}
-
-function calcularViagem() {
-    let mesesPlano = Number(document.getElementById("mesesPlano").value);
-    let total = gastos.reduce((s, g) => s + g.valor, 0);
-    let sobra = salario - total;
-    let resultado = document.getElementById("resultado");
-
-    if (sobra <= 0) {
-        resultado.textContent = "😬 Sem saldo disponível para poupar.";
-        return;
-    }
-    if (!mesesPlano || mesesPlano <= 0) {
-        resultado.textContent = "Informe em quantos meses quer viajar!";
-        return;
-    }
-
-    let metaMensal = sobra / mesesPlano;
-    resultado.textContent =
-        `💰 Você tem ${fmt(sobra)} sobrando por mês.\n` +
-        `📅 Guardando tudo, viaja em ${mesesPlano} ${mesesPlano === 1 ? "mês" : "meses"}.\n` +
-        `🎯 Meta mensal: ${fmt(metaMensal)}/mês`;
-}
-
-function buscarVoos() {
-    let destino = document.getElementById("destino").value;
-    window.open(`https://www.skyscanner.com.br/transport/flights-to/${destino}`);
-}
-
-function buscarOnibus() {
-    window.open(`https://www.clickbus.com.br`);
-}
-
-function buscarHotel() {
-    let destino = document.getElementById("destino").value;
-    window.open(`https://www.booking.com/searchresults.pt-br.html?ss=${destino}`);
-}
-
-// ========================
-// INICIAR
-// ========================
-atualizarHeader();
-atualizarLista();
-atualizarResumo();
-gerarCamposSimulacao();
-atualizarAnalise();
