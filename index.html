@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minhas Finanças</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -20,8 +20,18 @@
             <span class="header-sub" id="header-mes"></span>
         </div>
     </div>
-    <div class="header-badge" id="header-saldo">Saldo: R$ 0</div>
+    <div class="header-right">
+        <div class="header-badge" id="header-saldo">Saldo: R$ 0</div>
+        <button class="btn-theme" id="btn-theme" onclick="toggleTema()" title="Alternar tema">🌙</button>
+    </div>
 </header>
+
+<!-- NAV MESES -->
+<div class="nav-meses-bar">
+    <button class="nav-mes-btn" onclick="mesAnterior()">‹</button>
+    <span id="nav-mes-label" class="nav-mes-label"></span>
+    <button class="nav-mes-btn" onclick="mesProximo()">›</button>
+</div>
 
 <main class="main">
 
@@ -30,12 +40,17 @@
         <div class="card-header">
             <div class="card-icon icon-green">💵</div>
             <h2 class="card-title">Salário</h2>
+            <div class="recorrente-toggle" title="Repetir todo mês">
+                <label class="toggle-label" for="salario-recorrente">
+                    <input type="checkbox" id="salario-recorrente"> Fixo mensal
+                </label>
+            </div>
         </div>
         <div class="input-row">
             <input type="number" id="salario" placeholder="Digite seu salário (R$)">
             <button class="btn btn-primary" onclick="salvarSalario()">Salvar</button>
         </div>
-        <div id="toast-salario" class="toast" style="display:none;">✓ Salário salvo com sucesso!</div>
+        <div id="toast-salario" class="toast" style="display:none;">✓ Salário salvo!</div>
     </div>
 
     <!-- GASTOS -->
@@ -46,31 +61,40 @@
         </div>
 
         <p class="section-label">Categoria</p>
-        <div class="categorias">
+        <div class="categorias" id="categorias-grid">
             <div class="card-cat" onclick="selecionarCategoria(event, 'Casa')">
-                <span class="cat-ico">🏠</span>
-                <span class="cat-lbl">Casa</span>
+                <span class="cat-ico">🏠</span><span class="cat-lbl">Casa</span>
             </div>
             <div class="card-cat" onclick="selecionarCategoria(event, 'Aluguel')">
-                <span class="cat-ico">🏢</span>
-                <span class="cat-lbl">Aluguel</span>
+                <span class="cat-ico">🏢</span><span class="cat-lbl">Aluguel</span>
             </div>
             <div class="card-cat" onclick="selecionarCategoria(event, 'Viagem')">
-                <span class="cat-ico">✈️</span>
-                <span class="cat-lbl">Viagem</span>
+                <span class="cat-ico">✈️</span><span class="cat-lbl">Viagem</span>
             </div>
             <div class="card-cat" onclick="selecionarCategoria(event, 'Consórcio')">
-                <span class="cat-ico">📄</span>
-                <span class="cat-lbl">Consórcio</span>
+                <span class="cat-ico">📄</span><span class="cat-lbl">Consórcio</span>
             </div>
             <div class="card-cat" onclick="selecionarCategoria(event, 'Carro')">
-                <span class="cat-ico">🚗</span>
-                <span class="cat-lbl">Carro</span>
+                <span class="cat-ico">🚗</span><span class="cat-lbl">Carro</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Alimentação')">
+                <span class="cat-ico">🍔</span><span class="cat-lbl">Alimentação</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Saúde')">
+                <span class="cat-ico">❤️</span><span class="cat-lbl">Saúde</span>
+            </div>
+            <div class="card-cat" onclick="selecionarCategoria(event, 'Lazer')">
+                <span class="cat-ico">🎮</span><span class="cat-lbl">Lazer</span>
             </div>
             <div class="card-cat" onclick="selecionarCategoria(event, 'Outros')">
-                <span class="cat-ico">📦</span>
-                <span class="cat-lbl">Outros</span>
+                <span class="cat-ico">📦</span><span class="cat-lbl">Outros</span>
             </div>
+        </div>
+
+        <!-- Subcategoria -->
+        <div id="subcategoria-row" style="display:none;" class="mt-8">
+            <p class="section-label">Subcategoria <span style="color:#4b6080;font-weight:400;">(opcional)</span></p>
+            <input type="text" id="subcategoria" placeholder="Ex: Combustível, Seguro, Almoço...">
         </div>
 
         <input type="hidden" id="categoriaSelecionada">
@@ -82,10 +106,39 @@
         </div>
         <p id="erro-campos" class="erro" style="display:none;">⚠️ Preencha a descrição e o valor</p>
 
+        <!-- Data e recorrente -->
+        <div class="input-row mt-8">
+            <div class="input-with-label" style="flex:1;">
+                <label class="mini-label">Data</label>
+                <input type="date" id="data-gasto">
+            </div>
+            <label class="toggle-label recorrente-check">
+                <input type="checkbox" id="gasto-recorrente"> Recorrente
+            </label>
+        </div>
+
+        <!-- Limite de alerta -->
+        <div class="alerta-limite-row mt-8">
+            <label class="mini-label">🔔 Alerta quando gastar mais de (R$):</label>
+            <input type="number" id="limite-alerta" placeholder="Ex: 500" style="margin-top:4px;">
+        </div>
+
         <button class="btn btn-primary btn-full mt-8" onclick="adicionarGasto()">Adicionar gasto</button>
-        <div id="toast-gasto" class="toast" style="display:none;">✓ Gasto adicionado com sucesso!</div>
+        <div id="toast-gasto" class="toast" style="display:none;">✓ Gasto adicionado!</div>
 
         <ul id="lista" class="lista"></ul>
+    </div>
+
+    <!-- METAS -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-icon icon-amber">🎯</div>
+            <h2 class="card-title">Metas de Economia</h2>
+            <button class="btn-icon" onclick="adicionarMeta()">＋</button>
+        </div>
+        <div id="metas-lista" class="metas-lista">
+            <p class="empty-msg">Nenhuma meta criada ainda.</p>
+        </div>
     </div>
 
     <!-- RESUMO -->
@@ -93,11 +146,25 @@
         <div class="card-header">
             <div class="card-icon icon-purple">📋</div>
             <h2 class="card-title">Resumo</h2>
+            <div class="export-btns">
+                <button class="btn-export" onclick="exportarPDF()" title="Exportar PDF">📄 PDF</button>
+                <button class="btn-export" onclick="exportarCSV()" title="Exportar CSV">📊 CSV</button>
+            </div>
         </div>
         <div id="resumo-lista" class="resumo-lista"></div>
         <div class="saldo-box">
             <span class="saldo-lbl">Saldo restante</span>
             <span id="saldo" class="saldo-val positivo">R$ 0</span>
+        </div>
+        <!-- Barra progresso limite -->
+        <div id="barra-limite-wrap" style="display:none;margin-top:12px;">
+            <div class="barra-limite-label">
+                <span id="barra-limite-txt"></span>
+                <span id="barra-limite-pct"></span>
+            </div>
+            <div class="barra-limite-bg">
+                <div id="barra-limite-fill" class="barra-limite-fill"></div>
+            </div>
         </div>
     </div>
 
@@ -140,6 +207,12 @@
             </div>
         </div>
 
+        <!-- Gráfico histórico mensal -->
+        <div class="grafico-box grafico-historico">
+            <p class="grafico-titulo">Histórico mensal (últimos 6 meses)</p>
+            <canvas id="graficoHistorico" width="400" height="160"></canvas>
+        </div>
+
         <div class="simulacao-box">
             <p class="sim-titulo">Simule seus valores</p>
             <div class="sim-grid" id="sim-fixos"></div>
@@ -175,6 +248,9 @@
             <input type="text" id="destino" placeholder="Destino da viagem">
             <input type="number" id="dias" placeholder="Dias" class="input-small">
         </div>
+        <div class="input-row mt-8">
+            <input type="number" id="custo-viagem" placeholder="Custo estimado (R$)" style="flex:1;">
+        </div>
 
         <button class="btn btn-primary btn-full mt-8" onclick="mostrarOpcoes()">Calcular</button>
 
@@ -182,6 +258,7 @@
             <input type="number" id="mesesPlano" placeholder="Em quantos meses quer viajar?">
             <button class="btn btn-primary btn-full" onclick="calcularViagem()">Ver resultado</button>
             <p id="resultado" class="resultado-viagem"></p>
+            <div id="custo-diario-box" class="custo-diario-box" style="display:none;"></div>
             <div class="viagem-links">
                 <button class="btn btn-link" onclick="buscarVoos()">✈️ Passagens</button>
                 <button class="btn btn-link" onclick="buscarOnibus()">🚌 Ônibus</button>
@@ -191,6 +268,35 @@
     </div>
 
 </main>
+
+<!-- MODAL NOVA META -->
+<div id="modal-meta" class="modal-overlay" style="display:none;">
+    <div class="modal-box">
+        <h3 class="modal-title">Nova Meta de Economia</h3>
+        <div class="modal-field">
+            <label>Nome da meta</label>
+            <input type="text" id="meta-nome" placeholder="Ex: Viagem, Reserva, Carro...">
+        </div>
+        <div class="modal-field">
+            <label>Valor total (R$)</label>
+            <input type="number" id="meta-valor" placeholder="Ex: 5000">
+        </div>
+        <div class="modal-field">
+            <label>Já economizou (R$)</label>
+            <input type="number" id="meta-atual" placeholder="0">
+        </div>
+        <div class="modal-field">
+            <label>Emoji / ícone</label>
+            <input type="text" id="meta-icone" placeholder="🏖️" maxlength="4" style="font-size:20px;">
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-danger" onclick="fecharModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarMeta()">Salvar Meta</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast-global" class="toast toast-global" style="display:none;"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="script.js"></script>
