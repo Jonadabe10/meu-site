@@ -11,6 +11,36 @@
 </head>
 <body>
 
+<!-- ======================== -->
+<!-- TELA DE LOGIN            -->
+<!-- ======================== -->
+<div id="tela-login">
+    <div class="login-box">
+        <div class="login-logo">💰</div>
+        <h1 class="login-titulo">Minhas Finanças</h1>
+        <p class="login-sub">Controle seus gastos de forma simples e inteligente</p>
+        <button class="btn-google" onclick="fazerLoginGoogle()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" width="20">
+            Entrar com Google
+        </button>
+    </div>
+</div>
+
+<!-- ======================== -->
+<!-- TELA DE LOADING          -->
+<!-- ======================== -->
+<div id="tela-loading" style="display:none;">
+    <div class="loading-box">
+        <div class="loading-spinner"></div>
+        <p class="loading-txt">Carregando seus dados...</p>
+    </div>
+</div>
+
+<!-- ======================== -->
+<!-- APP PRINCIPAL            -->
+<!-- ======================== -->
+<div id="app-principal" style="display:none;">
+
 <!-- HEADER -->
 <header class="header">
     <div class="header-left">
@@ -23,6 +53,20 @@
     <div class="header-right">
         <div class="header-badge" id="header-saldo">Saldo: R$ 0</div>
         <button class="btn-theme" id="btn-theme" onclick="toggleTema()" title="Alternar tema">🌙</button>
+        <!-- MENU DO USUÁRIO -->
+        <div class="user-menu" id="user-menu" onclick="toggleUserMenu()">
+            <img id="user-foto" src="" alt="Foto" class="user-foto">
+            <span id="user-nome" class="user-nome"></span>
+            <span class="user-arrow">▾</span>
+            <div class="user-dropdown" id="user-dropdown" style="display:none;">
+                <div class="dropdown-email" id="dropdown-email"></div>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="verHistorico(event)">📅 Histórico completo</button>
+                <button class="dropdown-item" onclick="exportarTudo(event)">📦 Exportar tudo</button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item dropdown-sair" onclick="fazerLogout(event)">🚪 Sair</button>
+            </div>
+        </div>
     </div>
 </header>
 
@@ -91,7 +135,6 @@
             </div>
         </div>
 
-        <!-- Subcategoria -->
         <div id="subcategoria-row" style="display:none;" class="mt-8">
             <p class="section-label">Subcategoria <span style="color:#4b6080;font-weight:400;">(opcional)</span></p>
             <input type="text" id="subcategoria" placeholder="Ex: Combustível, Seguro, Almoço...">
@@ -106,14 +149,12 @@
         </div>
         <p id="erro-campos" class="erro" style="display:none;">⚠️ Preencha a descrição e o valor</p>
 
-        <!-- Recorrente (sem data) -->
         <div class="input-row mt-8" style="justify-content: flex-end;">
             <label class="toggle-label recorrente-check">
                 <input type="checkbox" id="gasto-recorrente"> Recorrente
             </label>
         </div>
 
-        <!-- Limite de alerta -->
         <div class="alerta-limite-row mt-8">
             <label class="mini-label">🔔 Alerta quando gastar mais de (R$):</label>
             <input type="number" id="limite-alerta" placeholder="Ex: 500" style="margin-top:4px;">
@@ -152,7 +193,6 @@
             <span class="saldo-lbl">Saldo restante</span>
             <span id="saldo" class="saldo-val positivo">R$ 0</span>
         </div>
-        <!-- Barra progresso limite -->
         <div id="barra-limite-wrap" style="display:none;margin-top:12px;">
             <div class="barra-limite-label">
                 <span id="barra-limite-txt"></span>
@@ -171,7 +211,6 @@
             <h2 class="card-title">Análise dos gastos</h2>
             <span class="badge-novo">novo</span>
         </div>
-
         <div class="analise-cards">
             <div class="analise-card">
                 <span class="analise-label">Salário</span>
@@ -190,7 +229,6 @@
                 <span class="analise-valor" id="an-pct">0%</span>
             </div>
         </div>
-
         <div class="analise-graficos">
             <div class="grafico-box">
                 <p class="grafico-titulo">Distribuição</p>
@@ -202,17 +240,13 @@
                 <canvas id="graficoBarra" width="150" height="180"></canvas>
             </div>
         </div>
-
-        <!-- Gráfico histórico mensal -->
         <div class="grafico-box grafico-historico">
             <p class="grafico-titulo">Histórico mensal (últimos 6 meses)</p>
             <canvas id="graficoHistorico" width="400" height="160"></canvas>
         </div>
-
         <div class="simulacao-box">
             <p class="sim-titulo">Simule seus valores</p>
             <div class="sim-grid" id="sim-fixos"></div>
-
             <div class="outros-box">
                 <div class="outros-header">
                     <span>Outros gastos</span>
@@ -220,7 +254,6 @@
                 </div>
                 <div id="outros-lista"></div>
             </div>
-
             <div class="sim-salario-row">
                 <div class="sim-field">
                     <label>Salário (R$)</label>
@@ -229,7 +262,6 @@
                 <button class="btn btn-roxo" onclick="atualizarAnalise()">Atualizar</button>
             </div>
         </div>
-
         <div id="analise-alertas" class="alertas-box"></div>
     </div>
 
@@ -239,7 +271,6 @@
             <div class="card-icon icon-amber">✈️</div>
             <h2 class="card-title">Planejar Viagem</h2>
         </div>
-
         <div class="input-row">
             <input type="text" id="destino" placeholder="Destino da viagem">
             <input type="number" id="dias" placeholder="Dias" class="input-small">
@@ -247,9 +278,7 @@
         <div class="input-row mt-8">
             <input type="number" id="custo-viagem" placeholder="Custo estimado (R$)" style="flex:1;">
         </div>
-
         <button class="btn btn-primary btn-full mt-8" onclick="mostrarOpcoes()">Calcular</button>
-
         <div id="opcoes" style="display:none;" class="opcoes-viagem">
             <input type="number" id="mesesPlano" placeholder="Em quantos meses quer viajar?">
             <button class="btn btn-primary btn-full" onclick="calcularViagem()">Ver resultado</button>
@@ -261,6 +290,16 @@
                 <button class="btn btn-link" onclick="buscarHotel()">🏨 Hotel</button>
             </div>
         </div>
+    </div>
+
+    <!-- HISTÓRICO COMPLETO -->
+    <div class="card" id="card-historico" style="display:none;">
+        <div class="card-header">
+            <div class="card-icon icon-blue">📅</div>
+            <h2 class="card-title">Histórico Completo</h2>
+            <button class="btn-icon" onclick="fecharHistorico()" style="background:var(--amber-dim);color:var(--amber);">✕</button>
+        </div>
+        <div id="historico-lista"></div>
     </div>
 
 </main>
@@ -294,7 +333,9 @@
 
 <div id="toast-global" class="toast toast-global" style="display:none;"></div>
 
+</div><!-- fim app-principal -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-    <script type="module" src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>
