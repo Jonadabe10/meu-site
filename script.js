@@ -35,7 +35,6 @@ let usuarioAtual = null;
 let mesAtual = new Date().getMonth();
 let anoAtual = new Date().getFullYear();
 
-// Cache local para evitar leituras excessivas
 let cacheGastos = {};
 let cacheSalarios = {};
 let cacheMetas = [];
@@ -67,19 +66,16 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById("tela-loading").style.display = "flex";
         document.getElementById("app-principal").style.display = "none";
 
-        // Carregar dados
         await carregarTodosOsDados();
 
         document.getElementById("tela-loading").style.display = "none";
         document.getElementById("app-principal").style.display = "block";
 
-        // Preencher info do usuário
         document.getElementById("user-nome").textContent = user.displayName?.split(" ")[0] || "Usuário";
         document.getElementById("user-foto").src = user.photoURL || "";
         document.getElementById("dropdown-email").textContent = user.email;
 
         carregarTema();
-        document.getElementById("data-gasto").value = getHoje();
         atualizarTudo();
     } else {
         usuarioAtual = null;
@@ -100,35 +96,27 @@ async function carregarTodosOsDados() {
     if (!usuarioAtual) return;
     const uid = usuarioAtual.uid;
 
-    // Carregar todos os meses de gastos
     const gastosRef = collection(db, "usuarios", uid, "gastos");
     const snap = await getDocs(gastosRef);
     cacheGastos = {};
     snap.forEach(d => { cacheGastos[d.id] = d.data().lista || []; });
 
-    // Carregar salários
     const salRef = collection(db, "usuarios", uid, "salarios");
     const salSnap = await getDocs(salRef);
     cacheSalarios = {};
     salSnap.forEach(d => { cacheSalarios[d.id] = d.data().valor || 0; });
 
-    // Carregar metas
     const metasRef = collection(db, "usuarios", uid, "metas");
     const metasSnap = await getDocs(metasRef);
     cacheMetas = [];
     metasSnap.forEach(d => cacheMetas.push({ id: d.id, ...d.data() }));
 
-    // Carregar configurações
     const cfgRef = doc(db, "usuarios", uid, "config", "geral");
     const cfgSnap = await getDoc(cfgRef);
     if (cfgSnap.exists()) {
         let cfg = cfgSnap.data();
-        if (cfg.tema) {
-            localStorage.setItem("tema", cfg.tema);
-        }
-        if (cfg.limiteAlerta) {
-            document.getElementById("limite-alerta").value = cfg.limiteAlerta;
-        }
+        if (cfg.tema) localStorage.setItem("tema", cfg.tema);
+        if (cfg.limiteAlerta) document.getElementById("limite-alerta").value = cfg.limiteAlerta;
     }
 }
 
@@ -150,7 +138,6 @@ async function salvarSalarioFirestore(m, a, val) {
 async function salvarMetasFirestore() {
     if (!usuarioAtual) return;
     const uid = usuarioAtual.uid;
-    // Apaga e recria todas (simples para pequenas listas)
     const metasRef = collection(db, "usuarios", uid, "metas");
     const snap = await getDocs(metasRef);
     for (let d of snap.docs) await deleteDoc(d.ref);
@@ -180,7 +167,6 @@ function setGastos(arr) {
 }
 
 function getSalario() {
-    // Se fixo mensal, usa o salário global
     const fixo = cacheSalarios["fixo"];
     if (fixo) return fixo;
     return cacheSalarios[getChaveMes(mesAtual, anoAtual)] || 0;
@@ -216,10 +202,6 @@ function showErro(id) {
 
 function getMesNome(m, a) {
     return new Date(a, m, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
-}
-
-function getHoje() {
-    return new Date().toISOString().slice(0, 10);
 }
 
 // ========================
@@ -354,7 +336,6 @@ window.adicionarGasto = function() {
     let valor = document.getElementById("valor").value;
     let categoria = document.getElementById("categoriaSelecionada").value;
     let subcategoria = document.getElementById("subcategoria").value.trim();
-    let data = document.getElementById("data-gasto").value || getHoje();
     let recorrente = document.getElementById("gasto-recorrente").checked;
     let limite = Number(document.getElementById("limite-alerta").value) || 0;
     if (limite > 0) salvarConfig({ limiteAlerta: limite });
@@ -365,14 +346,13 @@ window.adicionarGasto = function() {
     if (!ok) return;
 
     let gastos = getGastos();
-    gastos.push({ desc, valor: Number(valor), categoria, subcategoria, data, recorrente, id: Date.now() });
+    gastos.push({ desc, valor: Number(valor), categoria, subcategoria, recorrente, id: Date.now() });
     setGastos(gastos);
 
     document.getElementById("descricao").value = "";
     document.getElementById("valor").value = "";
     document.getElementById("categoriaSelecionada").value = "";
     document.getElementById("subcategoria").value = "";
-    document.getElementById("data-gasto").value = getHoje();
     document.getElementById("gasto-recorrente").checked = false;
     document.getElementById("subcategoria-row").style.display = "none";
     document.querySelectorAll(".card-cat").forEach(c => c.classList.remove("ativo"));
@@ -402,7 +382,7 @@ function atualizarLista() {
         lista.innerHTML = `<li style='text-align:center;color:var(--text-muted);font-size:13px;padding:14px 0;'>Nenhum gasto neste mês</li>`;
         return;
     }
-    let sorted = [...gastos].sort((a, b) => (b.data || "").localeCompare(a.data || ""));
+    let sorted = [...gastos].sort((a, b) => (b.id || 0) - (a.id || 0));
     sorted.forEach(g => {
         let index = gastos.findIndex(x => x.id === g.id);
         let cor = CORES_ITEM[g.categoria] || "#94a3b8";
@@ -616,11 +596,11 @@ window.exportarCSV = function() {
     let gastos = getGastos();
     let salario = getSalario();
     let mes = getMesNome(mesAtual, anoAtual);
-    let linhas = ["Descrição,Categoria,Subcategoria,Valor,Data,Recorrente"];
+    let linhas = ["Descrição,Categoria,Subcategoria,Valor,Recorrente"];
     gastos.forEach(g => {
-        linhas.push(`"${g.desc}","${g.categoria}","${g.subcategoria||""}",${g.valor},"${g.data||""}","${g.recorrente?"Sim":"Não"}"`);
+        linhas.push(`"${g.desc}","${g.categoria}","${g.subcategoria||""}",${g.valor},"${g.recorrente?"Sim":"Não"}"`);
     });
-    linhas.push(`"SALÁRIO","","",${salario},"",""`);
+    linhas.push(`"SALÁRIO","","",${salario},""`);
     let blob = new Blob([linhas.join("\n")], { type: "text/csv;charset=utf-8;" });
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -632,12 +612,12 @@ window.exportarCSV = function() {
 window.exportarTudo = function(e) {
     if (e) e.stopPropagation();
     document.getElementById("user-dropdown").style.display = "none";
-    let linhas = ["Mês,Descrição,Categoria,Valor,Data"];
+    let linhas = ["Mês,Descrição,Categoria,Valor"];
     Object.entries(cacheGastos).sort().forEach(([chave, gastos]) => {
         let [a, m] = chave.split("_");
         let nomeMes = new Date(Number(a), Number(m)-1, 1).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
         gastos.forEach(g => {
-            linhas.push(`"${nomeMes}","${g.desc}","${g.categoria}",${g.valor},"${g.data||""}"`);
+            linhas.push(`"${nomeMes}","${g.desc}","${g.categoria}",${g.valor}`);
         });
     });
     let blob = new Blob([linhas.join("\n")], { type: "text/csv;charset=utf-8;" });
@@ -656,14 +636,14 @@ window.exportarPDF = function() {
     let mes = getMesNome(mesAtual, anoAtual);
     let cats = {};
     gastos.forEach(g => { cats[g.categoria] = (cats[g.categoria] || 0) + g.valor; });
-    let linhas = gastos.map(g => `<tr><td>${g.desc}</td><td>${g.categoria}${g.subcategoria?" / "+g.subcategoria:""}</td><td>${g.data||""}</td><td style="text-align:right;font-weight:600;color:#dc2626;">${fmt(g.valor)}</td></tr>`).join("");
+    let linhas = gastos.map(g => `<tr><td>${g.desc}</td><td>${g.categoria}${g.subcategoria?" / "+g.subcategoria:""}</td><td style="text-align:right;font-weight:600;color:#dc2626;">${fmt(g.valor)}</td></tr>`).join("");
     let resumoCats = Object.entries(cats).map(([c,v]) => `<tr><td>${c}</td><td style="text-align:right;font-weight:600;">${fmt(v)}</td></tr>`).join("");
     let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Finanças - ${mes}</title>
     <style>body{font-family:Arial,sans-serif;padding:32px;color:#1a2740;max-width:700px;margin:auto;}h1{color:#1d4ed8;font-size:22px;margin-bottom:4px;}h2{color:#374151;font-size:15px;margin:20px 0 8px;}table{width:100%;border-collapse:collapse;font-size:13px;}th{background:#f0f4f8;padding:8px 10px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#6b829a;}td{padding:8px 10px;border-bottom:1px solid #e5eaf0;}.resumo{background:#f0f4f8;border-radius:10px;padding:16px;margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;}.card-r{flex:1;min-width:120px;}.card-r label{font-size:11px;color:#6b829a;display:block;text-transform:uppercase;}.card-r span{font-size:18px;font-weight:800;}.verde{color:#16a34a;}.vermelho{color:#dc2626;}</style></head><body>
     <h1>💰 Minhas Finanças</h1><p style="color:#6b829a;font-size:13px;">${mes.charAt(0).toUpperCase()+mes.slice(1)} · ${usuarioAtual?.displayName||""}</p>
     <div class="resumo"><div class="card-r"><label>Salário</label><span>${fmt(salario)}</span></div><div class="card-r"><label>Total gasto</label><span class="vermelho">${fmt(total)}</span></div><div class="card-r"><label>Saldo</label><span class="${saldo>=0?"verde":"vermelho"}">${(saldo<0?"-":"")+fmt(saldo)}</span></div></div>
     <h2>Por categoria</h2><table><thead><tr><th>Categoria</th><th style="text-align:right;">Total</th></tr></thead><tbody>${resumoCats}</tbody></table>
-    <h2>Todos os gastos</h2><table><thead><tr><th>Descrição</th><th>Categoria</th><th>Data</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${linhas}</tbody></table>
+    <h2>Todos os gastos</h2><table><thead><tr><th>Descrição</th><th>Categoria</th><th style="text-align:right;">Valor</th></tr></thead><tbody>${linhas}</tbody></table>
     </body></html>`;
     let win = window.open("", "_blank");
     win.document.write(html);
