@@ -24,7 +24,7 @@ const db = getFirestore(app);
 const CORES = ["#534AB7","#0F6E56","#D85A30","#D4537E","#185FA5","#BA7517","#639922","#993556","#A32D2D","#3C3489","#059669","#7C3AED"];
 const CATS_SUGERIDAS = ["Alimentação","Saúde","Educação","Lazer","Academia","Streaming","Internet","Luz","Água","Farmácia","Roupas","Pets","Seguros","Outros"];
 const CORES_ITEM = {
-    Casa:"#22c55e", Aluguel:"#60a5fa", Viagem:"#f59e0b", Consórcio:"#c084fc",
+    Casa:"#22c55e", Cartão:"#60a5fa", Viagem:"#f59e0b", Consórcio:"#c084fc",
     Carro:"#f87171", Alimentação:"#fb923c", Saúde:"#ec4899", Lazer:"#34d399", Outros:"#94a3b8"
 };
 
