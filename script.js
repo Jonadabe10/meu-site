@@ -117,6 +117,7 @@ async function carregarTodosOsDados() {
         let cfg = cfgSnap.data();
         if (cfg.tema) localStorage.setItem("tema", cfg.tema);
         if (cfg.limiteAlerta) document.getElementById("limite-alerta").value = cfg.limiteAlerta;
+        if (cfg.salarioFixo) cacheSalarios["fixo"] = cfg.salarioFixo;
     }
 }
 
