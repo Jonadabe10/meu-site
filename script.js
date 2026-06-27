@@ -254,6 +254,7 @@ window.mesAnterior = function() {
     atualizarTudo();
 };
 
+// ✅ CORREÇÃO: removido o bloqueio que impedia navegar para meses futuros
 window.mesProximo = function() {
     mesAtual++;
     if (mesAtual > 11) { mesAtual = 0; anoAtual++; }
