@@ -255,8 +255,6 @@ window.mesAnterior = function() {
 };
 
 window.mesProximo = function() {
-    let agora = new Date();
-    if (anoAtual === agora.getFullYear() && mesAtual === agora.getMonth()) return;
     mesAtual++;
     if (mesAtual > 11) { mesAtual = 0; anoAtual++; }
     atualizarTudo();
